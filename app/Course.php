@@ -14,16 +14,16 @@ class Course extends Model
     ];
 
     protected $fillable = [
-        'name', 'certificate', 'thumbnail', 'type', 'status', 'price', 'level', 'description', 'mentors_id'
+        'name', 'certificate', 'thumbnail', 'type', 'status', 'price', 'level', 'description', 'mentors_id', 'slug'
     ];
     
-    public function mentor() {
+    public function mentors() {
         return $this->belongsTo('App\Mentor', 'mentors_id');
     }
-    public function chapter() {
+    public function chapters() {
         return $this->hasMany('App\Chapter', 'courses_id')->orderBy('id', 'ASC');
     }
-    public function image() {
+    public function images() {
         return $this->hasMany('App\ImageCourse', 'courses_id')->orderBy('id', 'DESC');
     }
 }

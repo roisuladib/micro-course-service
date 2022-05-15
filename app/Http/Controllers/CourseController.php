@@ -9,6 +9,7 @@ use App\MyCourse;
 use App\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class CourseController extends Controller
 {
@@ -32,7 +33,7 @@ class CourseController extends Controller
     }
 
     public function show($id) {
-        $course = Course::with(['chapter.lesson', 'mentor', 'image'])->find($id);
+        $course = Course::with(['chapters.lessons', 'mentors', 'images'])->find($id);
         if (!$course) {
             return response()->json([
                 'status' => 'error',
@@ -55,13 +56,13 @@ class CourseController extends Controller
             }
         }
         $totalStudent = MyCourse::where('courses_id', '=', $id)->count();
-        $totalVideos = Chapter::where('courses_id', '=', $id)->withCount('lesson')->get()->toArray();
-        $finalTotalVideos = array_sum(array_column($totalVideos, 'lesson_count'));
+        $totalVideos = Chapter::where('courses_id', '=', $id)->withCount('lessons')->get()->toArray();
+        $finalTotalVideos = array_sum(array_column($totalVideos, 'lessons_count'));
         // echo '<pre>' .  print_r($totalVideos, 1) . '</pre>';
         // echo '<pre>' .  print_r($finalTotalVideos, 1) . '</pre>';
         $course['reviews'] = $reviews;
-        $course['total_student'] = $totalStudent;
-        $course['total_video'] = $finalTotalVideos; 
+        $course['total_students'] = $totalStudent;
+        $course['total_videos'] = $finalTotalVideos; 
         return response()->json([
             'status' => 'success',
             'data' => $course
@@ -78,9 +79,11 @@ class CourseController extends Controller
             'price' => 'integer',
             'level' => 'required|in:all-level,beginner,intermediate,advance',
             'mentors_id' => 'required|integer',
-            'description' => 'string'
+            'description' => 'string',
+            'slug' => 'string'
         ];
         $data = $request->all();
+        $data['slug'] = Str::slug($request->name);
         $validator = Validator::make($data, $rules);
         if ($validator->fails()) {
             return response()->json([
@@ -113,9 +116,11 @@ class CourseController extends Controller
             'price' => 'integer',
             'level' => 'in:all-level,beginner,intermediate,advance',
             'mentors_id' => 'integer',
-            'description' => 'string'
+            'description' => 'string',
+            'slug' => 'string'
         ];
         $data = $request->all();
+        $data['slug'] = Str::slug($request->name);
         $validator = Validator::make($data, $rules);
         if ($validator->fails()) {
             return response()->json([
